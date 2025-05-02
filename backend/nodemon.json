@@ -1,0 +1,7 @@
+{
+    "watch": "backend",
+    "ext": ".ts, .js",
+    "ignore": [],
+    "exec": "tsx ./servet.ts"
+  }
+  

@@ -1,0 +1,167 @@
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import { UserRepository } from '../db/repositories/user.repository';
+import { User } from '../repositories/user.repotype';
+import { MailService } from './mail.services';
+import { config } from 'dotenv';
+import { AppError } from '../utils/errorhandler';
+
+
+config();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'jwt secret key';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+export class UserService {
+  constructor(
+    private userRepository: UserRepository,
+    private mailService: MailService
+  ) {}
+
+  // Register a new user
+  async registerUser(
+    first_name: string,
+    last_name: string,
+    email: string,
+    password: string,
+    phone: string,
+    dob: Date | null,
+    gender: 'm' | 'f' | '0',
+    address: string,
+    role: User['role']
+  ): Promise<number> {
+
+
+    const existingUser = await this.userRepository.findByEmail(email);
+    if (existingUser) throw new AppError('User already exist with this email.`');
+    if (password.length < 8) throw new Error('Password must be at least 8 characters');
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    let hashedToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+   
+    const userId = await this.userRepository.create(
+      first_name,
+      last_name,
+      email,
+      passwordHash,
+      phone,
+      dob,
+      gender,
+      address,
+      role,
+      hashedToken 
+    );
+
+    const verificationUrl = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    await this.mailService.sendVerificationEmail(email, verificationUrl);
+
+    return userId;
+
+  }
+
+  // Authenticate user and generate JWT
+  async authenticateUser(email: string, password: string): Promise<{ token: string; user: User }> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw new AppError('invalid user');
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) throw new AppError('invalid credentials');
+
+    if (!user.is_verified) throw new AppError('Please verify your email before logging in');
+
+    const token = this.generateToken(user);
+    return { token, user };
+  }
+
+  private generateToken(user: User): string {
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: '5h' });
+  }
+
+  async getUserProfile(userId: number): Promise<User> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw new AppError('user not found');
+    return user;
+  }
+
+  async updateUserProfile(
+    userId: number,
+    updates: Partial<Pick<User, 'first_name' | 'last_name' | 'email' | 'phone' | 'address' | 'gender' | 'dob' | 'role'>>
+  ): Promise<void> {
+    if (updates.email) {
+      const existingUser = await this.userRepository.findByEmail(updates.email);
+      if (existingUser && existingUser.id !== userId) {
+        throw new AppError('email already in use');
+      }
+    }
+
+    await this.userRepository.update(userId, updates);
+  }
+
+  static verifyToken(token: string): any {
+    try {
+      return jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+      throw new AppError('invalid token');
+    }
+  }
+
+  async verifyEmailToken(token: string): Promise<void> {
+    let hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+    const user = await this.userRepository.findByVerificationToken(hashedToken);
+
+    if (!user) throw new AppError('Invalid or expired verification token');
+
+    await this.userRepository.updateVerificationStatus(user.id,true, null);
+   
+  }
+
+  async initiatePasswordReset(email: string): Promise<void> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw new AppError('User not found');
+  
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+  
+    await this.userRepository.update(user.id, {verificationToken:hashedToken});
+  
+    const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+    await this.mailService.sendVerificationEmail(user.email, resetUrl);
+
+  }
+  
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await this.userRepository.findByVerificationToken(hashedToken);
+  
+    if (!user) {
+      throw new AppError('Invalid or expired reset token');
+    }
+  
+    if (newPassword.length < 8) {
+      throw new Error('Password must be at least 8 characters');
+    }
+  
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.userRepository.update(user.id, {password:hashedPassword});
+  
+    // Clear reset token  after successful reset
+    await this.userRepository.update(user.id, {verificationToken:null});
+  }
+  
+
+
+}
