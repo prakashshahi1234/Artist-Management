@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 import { UserController } from '../controllers/user.controller';
 import { UserRepository } from '../db/repositories/user.repository';
 import { UserService } from '../services/user.services';
-import { authenticateJWT } from '../middlewares/auth';
+import { authenticateJWT, checkRoles } from '../middlewares/auth';
 import { MailService } from '../services/mail.services';
 
 const router = Router();
@@ -32,8 +32,7 @@ const validateRegistration = [
   // Password validation
   body('password')
     .notEmpty().withMessage('Password is required')
-    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/\d/).withMessage('Password must contain at least one number') , // Optional: if you want to enforce numbers
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
 
   
   body('phone')
@@ -44,9 +43,9 @@ const validateRegistration = [
   body('dob')
     .isDate().withMessage('Invalid date of birth'),
 
-  // Gender validation (optional, can be 'm', 'f', or '0')
+  // 
   body('gender')
-    .isIn(['m', 'f', '0']).withMessage('Invalid gender'),
+    .isIn(['m', 'f', 'o']).withMessage('Invalid gender'),
 
   // A
   body('address')
@@ -70,12 +69,15 @@ const validateLogin = [
 
 
 // Routes
-router.route('/register').post(validateRegistration, userController.register.bind(userController));
+router.route('/register-admin').post(validateRegistration, userController.register.bind(userController));
+router.route('/register').post(authenticateJWT,checkRoles('super_admin' , 'artist_manager' , 'artist') ,validateRegistration, userController.register.bind(userController));
 router.route('/login').post(validateLogin, userController.login.bind(userController));
 router.route('/profile').get(authenticateJWT, userController.getProfile.bind(userController))
 router.route("/verify-email").get(userController.verifyEmail.bind(userController))
 router.route("/forgot-password").post(userController.forgotPassword.bind(userController))
 router.route("/reset-password").post(userController.resetPassword.bind(userController))
-
+router.route("/").get(authenticateJWT, checkRoles("super_admin", "artist_manager"), userController.getAllUsers.bind(userController) )
+router.route("/update/:id").patch(authenticateJWT, checkRoles("super_admin", "artist_manager"), userController.updateProfile.bind(userController) )
+router.route("/remove/:id").delete(authenticateJWT, checkRoles("super_admin"), userController.removeUser.bind(userController) )
 
 export default router;

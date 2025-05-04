@@ -1,13 +1,16 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { UserService } from '../services/user.services';
+import { User } from '../repositories/user.repotype';
 
 export class UserController {
   constructor(private userService: UserService) {}
 
-  async register(req: Request, res: Response) {
-    const errors = validationResult(req);
+  async register(req: Request, res: Response, next:NextFunction) {
 
+    
+    const errors = validationResult(req);
+    
     if (!errors.isEmpty()) {
       res.status(400).json({
         success: false,
@@ -29,6 +32,19 @@ export class UserController {
         address,
         role,
       } = req.body;
+
+      // @ts-ignore
+      const curRole = req.user?.role;
+
+      if(curRole==='artist_manager' &&( role==='super_admin' || role==='artist_manager')){
+        res.status(500).json({
+          success: false,
+          message:  'Invalid data.',
+        });
+        return;
+      }
+
+      
 
       const userId = await this.userService.registerUser(
         first_name,
@@ -186,4 +202,135 @@ export class UserController {
       });
     }
   }
+  async getAllUsers(req: Request, res: Response) {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const page = parseInt(req.query.page as string) || 1;
+      const offset = (page - 1) * limit;
+  
+      // @ts-ignore
+      const currentUserRole = req.user?.role;
+      
+      // Determine filter
+      let filter: any = {};
+      if (currentUserRole === 'artist_manager') {
+        filter.role = 'artist';
+      }
+      // if super_admin: no filter applied
+  
+      const users = await this.userService.getAllUsers(limit, offset, filter);
+      const totalUsers = await this.userService.getTotalUserCount(filter);
+  
+      const totalPages = Math.ceil(totalUsers / limit);
+  
+      res.status(200).json({
+        success: true,
+        data: users,
+        pagination: {
+          totalUsers,
+          totalPages,
+          currentPage: page,
+          perPage: limit,
+        },
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error?.message || 'Failed to fetch users',
+      });
+    }
+  }
+  
+  
+
+  async updateProfile(req: Request, res: Response) {
+    try {
+      const data: Partial<Pick<User, 'first_name' | 'last_name' | 'email' | 'phone' | 'address' | 'gender' | 'dob' | 'role'>> = req.body;
+      const { id } = req.params;
+  
+      // @ts-ignore
+      const curRole = req.user?.role;
+  
+      if (!data || !id) {
+         res.status(400).json({
+          success: false,
+          message: !id ? 'User ID is required' : 'Invalid details.',
+        });
+        return;
+      }
+  
+      if (curRole === 'artist_manager') {
+        if (data.role && data.role !== 'artist') {
+           res.status(403).json({
+            success: false,
+            message: 'Artist managers can only assign role "artist".',
+          });
+          return;
+        }
+      }
+  
+      const updatedUser = await this.userService.updateUserProfile(parseInt(id), data);
+  
+       res.status(200).json({
+        success: true,
+        message: 'User profile updated successfully',
+        data: updatedUser,
+      });
+
+    } catch (error: any) {
+       res.status(500).json({
+        success: false,
+        message: error?.message || 'An error occurred while updating the profile',
+      });
+    }
+  }
+  
+
+
+  async removeUser(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      // @ts-ignore
+      const {user} =req;
+
+      if(user?.id == parseInt(id)){
+        res.status(400).json({
+          success: false,
+          message: 'You cannot remove self identity.',
+        });
+        return;
+      }
+  
+      if (!id) {
+         res.status(400).json({
+          success: false,
+          message: 'User ID is required',
+        });
+        return;
+      }
+
+           // @ts-ignore
+      const curRole = req.user?.role;
+
+
+  
+      await this.userService.removeUser(parseInt(id), curRole!);
+   
+      res.status(200).json({
+        success: true,
+        message: 'User deleted successfully',
+      });
+
+
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error?.message || 'Failed to delete user',
+      });
+    }
+  }
+  
+  
+  
+
 }

@@ -1,14 +1,15 @@
-// types/express.d.ts
+export interface DecodedUser{
+  id: number;
+  email: string;
+  role:  'super_admin' | 'artist_manager' | 'artist'
+};
 
 import { Request as ExpressRequest } from 'express';
 
 declare global {
   namespace Express {
     export interface Request {
-      user?: {
-        id: number;
-        email: string;
-      };
+      user?:DecodedUser;
     }
   }
 }
