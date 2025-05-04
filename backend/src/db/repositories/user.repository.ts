@@ -13,13 +13,13 @@ export class UserRepository implements IUserRepository {
     gender: 'm' | 'f' | '0',
     address: string,
     role: User['role'],
-    verificationToken: string | null = null
+    verification_token: string | null = null
   ): Promise<number> {
     const result = await db.query<OkPacket>(
       `INSERT INTO users 
        (first_name, last_name, email, password, phone, dob, gender, address, role, verification_token) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstName, lastName, email, password, phone, dob, gender, address, role, verificationToken]
+      [firstName, lastName, email, password, phone, dob, gender, address, role, verification_token]
     );
     return result.insertId;
   }

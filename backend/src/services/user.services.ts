@@ -34,7 +34,8 @@ export class UserService {
 
 
     const existingUser = await this.userRepository.findByEmail(email);
-    if (existingUser) throw new AppError('User already exist with this email.`');
+    console.log(existingUser)
+    if (existingUser) throw new AppError('User already exist with this email.');
     if (password.length < 8) throw new Error('Password must be at least 8 characters');
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -58,7 +59,12 @@ export class UserService {
     );
 
     const verificationUrl = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
-    await this.mailService.sendVerificationEmail(email, verificationUrl);
+    const {success} = await this.mailService.sendVerificationEmail(email, verificationUrl);
+
+    if(!success){
+        await this.userRepository.delete(userId)
+        throw new AppError('Server error, Please try again shortly.')
+    }
 
     return userId;
 
@@ -136,7 +142,7 @@ export class UserService {
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
   
-    await this.userRepository.update(user.id, {verificationToken:hashedToken});
+    await this.userRepository.update(user.id, {verification_token:hashedToken});
   
     const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
     await this.mailService.sendVerificationEmail(user.email, resetUrl);
@@ -159,7 +165,7 @@ export class UserService {
     await this.userRepository.update(user.id, {password:hashedPassword});
   
     // Clear reset token  after successful reset
-    await this.userRepository.update(user.id, {verificationToken:null});
+    await this.userRepository.update(user.id, {verification_token:null});
   }
   
 

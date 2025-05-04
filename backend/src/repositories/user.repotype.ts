@@ -15,6 +15,7 @@ export interface User extends RowDataPacket {
   role: 'super_admin' | 'artist_manager' | 'artist';
   created_at: Date;
   updated_at: Date;
+  verification_token?:string | null;
 }
 
 // Define the UserRepository interface specifically for User operations

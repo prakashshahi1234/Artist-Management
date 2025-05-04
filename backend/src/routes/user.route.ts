@@ -35,12 +35,12 @@ const validateRegistration = [
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
     .matches(/\d/).withMessage('Password must contain at least one number') , // Optional: if you want to enforce numbers
 
-  // Phone validation (optional, but must be a valid phone number if provided)
+  
   body('phone')
     .optional()
     .isMobilePhone('any').withMessage('Invalid phone number'),
 
-  // Date of birth validation (optional, must be a valid date if provided)
+
   body('dob')
     .isDate().withMessage('Invalid date of birth'),
 
@@ -48,7 +48,7 @@ const validateRegistration = [
   body('gender')
     .isIn(['m', 'f', '0']).withMessage('Invalid gender'),
 
-  // Address validation (optional, must be a valid string if provided)
+  // A
   body('address')
     .optional()
     .isString().withMessage('Invalid address'),
@@ -74,4 +74,8 @@ router.route('/register').post(validateRegistration, userController.register.bin
 router.route('/login').post(validateLogin, userController.login.bind(userController));
 router.route('/profile').get(authenticateJWT, userController.getProfile.bind(userController))
 router.route("/verify-email").get(userController.verifyEmail.bind(userController))
+router.route("/forgot-password").post(userController.forgotPassword.bind(userController))
+router.route("/reset-password").post(userController.resetPassword.bind(userController))
+
+
 export default router;
