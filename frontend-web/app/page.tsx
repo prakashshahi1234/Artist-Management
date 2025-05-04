@@ -1,25 +1,34 @@
 "use client"
-import { useAuth } from "@/components/AuthProvider";
-import Image from "next/image";
-import Loading from "./(auth)/Loading";
-import { useRouter } from "next/navigation";
+
+import { useEffect } from "react"
+import { useAuth } from "@/components/AuthProvider"
+import Image from "next/image"
+import Loading from "./(auth)/Loading"
+import { useRouter } from "next/navigation"
+import MainNav from "@/components/navigation/mainNav"
+import LoginForm from "./(auth)/login/page"
 
 export default function Home() {
-  
-  const {user, isLoading} = useAuth();
+  const { user, isLoading } = useAuth()
   const router = useRouter()
 
-  if(isLoading) return <Loading/>
+  useEffect(() => {
+    if (user) {
+      // Redirect based on role
+      if (user.role === "super_admin" || user.role === "artist_manager") {
+        router.push("/users/all")
+      } else {
+        router.push("/songs/all")
+      }
+    }
+  }, [user, router])
 
-  if(!user){
-     router.push("/login")
-     return;
-  }
-
+  if (isLoading) return <Loading />
 
   return (
-      <div>
-        <p className="">{user.email}</p>
-      </div>
-  );
+    <>
+      <MainNav />
+      <LoginForm />
+    </>
+  )
 }

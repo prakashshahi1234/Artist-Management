@@ -8,7 +8,7 @@ import axiosClient from '@/config/axios'
 
 export const useAuth = () => {
   const router = useRouter()
-
+  
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (values: { email: string; password: string }) => {
@@ -17,10 +17,7 @@ export const useAuth = () => {
     },
     onSuccess: (data) => {
       toast.success("Login successful")
-      if (data.token) {
-        localStorage.setItem('authToken', data.token)
-      }
-      router.push('/dashboard')
+      router.push('/users/all')
     },
     onError: (error: any) => {
       toast.error("Login failed", {
@@ -29,7 +26,7 @@ export const useAuth = () => {
     }
   })
 
-  // Registration mutation
+  // User Registration
   const registerMutation = useMutation({
     mutationFn: async (values: any) => {
       const payload = {
@@ -41,14 +38,32 @@ export const useAuth = () => {
     },
     onSuccess: () => {
       toast.success("Registration successful! Please check your email to verify your account.")
-      router.push('/login')
     },
     onError: (error: any) => {
       toast.error("Registration failed: " + (error?.response?.data?.message || "Please try again"))
     }
   })
 
-  // Forgot password mutation
+  // ✅ Admin Registration
+  const registerAdminMutation = useMutation({
+    mutationFn: async (values: any) => {
+      const payload = {
+        ...values,
+        dob: format(values.dob, 'yyyy-MM-dd')
+      }
+      const response = await axiosClient.post('/user/register-admin', payload)
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success("Admin registered successfully! You can now login.")
+      router.push('/login')
+    },
+    onError: (error: any) => {
+      toast.error("Admin registration failed: " + (error?.response?.data?.message || "Please try again"))
+    }
+  })
+
+  // Forgot password
   const forgotPasswordMutation = useMutation({
     mutationFn: async (email: string) => {
       const response = await axiosClient.post('/user/forgot-password', { email })
@@ -58,14 +73,11 @@ export const useAuth = () => {
       toast.success("Password reset link sent successfully")
     },
     onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 
-        "Failed to send reset link. Please try again later."
-      )
+      toast.error(error?.response?.data?.message || "Failed to send reset link. Please try again later.")
     }
   })
 
-  // Reset password mutation
+  // Reset password
   const resetPasswordMutation = useMutation({
     mutationFn: async ({ token, newPassword }: { token: string; newPassword: string }) => {
       const response = await axiosClient.post('/user/reset-password', { token, newPassword })
@@ -76,14 +88,11 @@ export const useAuth = () => {
       router.push('/login')
     },
     onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 
-        "Failed to reset password. Please try again."
-      )
+      toast.error(error?.response?.data?.message || "Failed to reset password. Please try again.")
     }
   })
 
-  // Verify email mutation
+  // Email verification
   const verifyEmailMutation = useMutation({
     mutationFn: async (token: string) => {
       const response = await axiosClient.get(`/user/verify-email?token=${token}`)
@@ -93,10 +102,7 @@ export const useAuth = () => {
       toast.success("Email verified successfully")
     },
     onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 
-        "Failed to verify email. Please try again."
-      )
+      toast.error(error?.response?.data?.message || "Failed to verify email. Please try again.")
     }
   })
 
@@ -110,6 +116,11 @@ export const useAuth = () => {
       isPending: registerMutation.isPending,
       isSuccess: registerMutation.isSuccess,
     },
+    registerAdmin: {
+      mutate: registerAdminMutation.mutate,
+      isPending: registerAdminMutation.isPending,
+      isSuccess: registerAdminMutation.isSuccess,
+    },
     forgotPassword: {
       mutate: forgotPasswordMutation.mutate,
       isPending: forgotPasswordMutation.isPending,
@@ -118,14 +129,13 @@ export const useAuth = () => {
     resetPassword: {
       mutate: resetPasswordMutation.mutate,
       isPending: resetPasswordMutation.isPending,
-
     },
     verifyEmail: {
       mutate: verifyEmailMutation.mutate,
       isPending: verifyEmailMutation.isPending,
       isSuccess: verifyEmailMutation.isSuccess,
-      isError:verifyEmailMutation.isError,
-      error:verifyEmailMutation.error
+      isError: verifyEmailMutation.isError,
+      error: verifyEmailMutation.error
     }
   }
 }
