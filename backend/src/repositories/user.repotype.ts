@@ -10,7 +10,7 @@ export interface User extends RowDataPacket {
   password: string;
   phone: string;
   dob: Date | null;
-  gender: 'm' | 'f' | '0';
+  gender: 'm' | 'f' | 'o';
   address: string;
   role: 'super_admin' | 'artist_manager' | 'artist';
   created_at: Date;
@@ -27,7 +27,7 @@ export interface IUserRepository {
     password: string,
     phone: string,
     dob: Date | null,
-    gender: 'm' | 'f' | '0',
+    gender: 'm' | 'f' | 'o',
     address: string,
     role: User['role']
   ): Promise<number>;

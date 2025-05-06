@@ -106,6 +106,23 @@ export const useAuth = () => {
     }
   })
 
+
+  // Logout mutation
+const logoutMutation = useMutation({
+  mutationFn: async () => {
+    const response = await axiosClient.get('/user/logout')
+    return response.data
+  },
+  onSuccess: () => {
+    toast.success('Logged out successfully')
+    router.push('/login')
+  },
+  onError: (error: any) => {
+    toast.error(error?.response?.data?.message || 'Logout failed')
+  }
+})
+
+
   return {
     login: {
       mutate: loginMutation.mutate,
@@ -136,6 +153,11 @@ export const useAuth = () => {
       isSuccess: verifyEmailMutation.isSuccess,
       isError: verifyEmailMutation.isError,
       error: verifyEmailMutation.error
+    },
+    logout: {
+      mutate: logoutMutation.mutate,
+      isPending: logoutMutation.isPending,
     }
+    
   }
 }

@@ -17,13 +17,13 @@ export default function Page() {
   }
 
 
-  const isSuperAdmin = user?.role === "super_admin"
+  const isUser = user
 
   return (
     <UserRegistrationForm
-      hideRoleField={!isSuperAdmin}
-      defaultValues={!isSuperAdmin ?{ role:  "super_admin" } :{}}
-      onSubmitHandler={(data) =>isSuperAdmin ? registerMutate(data) :registerAdminMutate(data)}
+      hideRoleField={!isUser}
+      defaultValues={!isUser ?{ role:  "super_admin" } :{}}
+      onSubmitHandler={(data) =>isUser ? registerMutate(data) :registerAdminMutate(data)}
       successMessage="Welcome to the platform!"
     />
   )

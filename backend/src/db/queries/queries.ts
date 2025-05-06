@@ -29,7 +29,7 @@ export const DatabaseQueries = {
   address VARCHAR(255),
   first_release_year YEAR,
   no_of_album_released INT,
-  user_id INT NOT NULL,
+  user_id INT ,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

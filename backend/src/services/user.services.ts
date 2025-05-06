@@ -6,6 +6,7 @@ import { User } from '../repositories/user.repotype';
 import { MailService } from './mail.services';
 import { config } from 'dotenv';
 import { AppError } from '../utils/errorhandler';
+import { ArtistService } from './artist.services';
 
 
 config();
@@ -16,7 +17,8 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 export class UserService {
   constructor(
     private userRepository: UserRepository,
-    private mailService: MailService
+    private mailService: MailService,
+    private artistService:ArtistService
   ) { }
 
   // Register a new user
@@ -27,7 +29,7 @@ export class UserService {
     password: string,
     phone: string,
     dob: Date | null,
-    gender: 'm' | 'f' | '0',
+    gender: 'm' | 'f' | 'o',
     address: string,
     role: User['role']
   ): Promise<number> {
@@ -62,8 +64,19 @@ export class UserService {
     const { success } = await this.mailService.sendVerificationEmail(email, verificationUrl);
 
     if (!success) {
-      await this.userRepository.delete(userId)
+      await this.userRepository.delete(userId);
       throw new AppError('Server error, Please try again shortly.')
+    }
+
+    if(role==='artist'){
+      await this.artistService.createArtist({
+        name:first_name+ " " +last_name,
+        address,
+        dob,
+        user_id:userId,
+        gender,
+        no_of_album_released:0
+      })
     }
 
     return userId;

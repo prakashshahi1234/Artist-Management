@@ -17,7 +17,7 @@ export class UserRepository implements IUserRepository {
     password: string,
     phone: string,
     dob: Date | null,
-    gender: 'm' | 'f' | '0',
+    gender: 'm' | 'f' | 'o',
     address: string,
     role: User['role'],
     verification_token: string | null = null

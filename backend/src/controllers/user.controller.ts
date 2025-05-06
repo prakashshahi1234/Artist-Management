@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { UserService } from '../services/user.services';
 import { User } from '../repositories/user.repotype';
+import { ArtistService } from '../services/artist.services';
 
 export class UserController {
   constructor(private userService: UserService) {}
@@ -57,6 +58,9 @@ export class UserController {
         address,
         role
       );
+
+
+  
 
       res.status(201).json({
         success: true,
@@ -202,6 +206,30 @@ export class UserController {
       });
     }
   }
+
+
+  async logout(req: Request, res: Response) {
+    try {
+      res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
+  
+      res.status(200).json({
+        success: true,
+        message: 'Logged out successfully',
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error?.message || 'Logout failed',
+      });
+    }
+  }
+  
+
+
   async getAllUsers(req: Request, res: Response) {
     try {
       const limit = parseInt(req.query.limit as string) || 10;

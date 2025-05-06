@@ -5,10 +5,12 @@ import { UserRepository } from '../db/repositories/user.repository';
 import { UserService } from '../services/user.services';
 import { authenticateJWT, checkRoles } from '../middlewares/auth';
 import { MailService } from '../services/mail.services';
+import { ArtistService } from '../services/artist.services';
+import { ArtistRepository } from '../db/repositories/artist.repository';
 
 const router = Router();
 
-const userService = new UserService(new UserRepository(), new MailService());
+const userService = new UserService(new UserRepository(), new MailService(), new ArtistService(new ArtistRepository()));
 const userController = new UserController(userService);
 
 // Validation middleware for registration
@@ -79,5 +81,5 @@ router.route("/reset-password").post(userController.resetPassword.bind(userContr
 router.route("/").get(authenticateJWT, checkRoles("super_admin", "artist_manager"), userController.getAllUsers.bind(userController) )
 router.route("/update/:id").patch(authenticateJWT, checkRoles("super_admin", "artist_manager"), userController.updateProfile.bind(userController) )
 router.route("/remove/:id").delete(authenticateJWT, checkRoles("super_admin"), userController.removeUser.bind(userController) )
-
+router.route("/logout").get(userController.logout.bind(userController))
 export default router;
