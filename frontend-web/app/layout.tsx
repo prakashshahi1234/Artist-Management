@@ -4,6 +4,7 @@ import "./globals.css";
 import QueryProvider from "@/components/QueryProvider";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/AuthProvider";
+import MainNav from "@/components/navigation/mainNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <Toaster position="top-center" richColors />
         <QueryProvider>
           <AuthProvider>
+          <MainNav />
             {children}
           </AuthProvider>
         </QueryProvider>

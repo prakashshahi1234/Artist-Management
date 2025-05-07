@@ -19,12 +19,9 @@ import {
 import { cn } from "@/lib/utils"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { useMutation } from "@tanstack/react-query"
-import { toast } from "sonner"
 import {
   Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
-import { useAuth } from "@/hooks/useAuth"
 import { useArtists } from "@/hooks/useArtist"
 
 const formSchema = z.object({

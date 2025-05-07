@@ -1,34 +1,40 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useAuth } from "@/components/AuthProvider"
-import Image from "next/image"
-import Loading from "./(auth)/Loading"
-import { useRouter } from "next/navigation"
-import MainNav from "@/components/navigation/mainNav"
-import LoginForm from "./(auth)/login/page"
+import { useEffect } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { useRouter } from "next/navigation";
+
+import MainNav from "@/components/navigation/mainNav";
+import LoginForm from "./(auth)/login/page";
+import Loading from "./(auth)/Loading";
 
 export default function Home() {
-  const { user, isLoading } = useAuth()
-  const router = useRouter()
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
-      // Redirect based on role
       if (user.role === "super_admin" || user.role === "artist_manager") {
-        router.push("/users/all")
+        router.push("/users/all");
       } else {
-        router.push("/songs/all")
+        router.push("/songs/all");
       }
     }
-  }, [user, router])
+  }, [user, router, isLoading]);
 
-  if (isLoading) return <Loading />
+  if (isLoading) return <Loading />;
 
-  return (
-    <>
-      <MainNav />
-      <LoginForm />
-    </>
-  )
+  if (!user) {
+    return (
+      <>
+        <div className="flex justify-center items-center min-h-[80vh] px-4">
+          <div className="w-full max-w-md">
+            <LoginForm />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return null;
 }

@@ -167,6 +167,7 @@ export class UserService {
     await this.userRepository.update(user.id, { verification_token: hashedToken });
 
     const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+    
     await this.mailService.sendVerificationEmail(user.email, resetUrl);
 
   }
