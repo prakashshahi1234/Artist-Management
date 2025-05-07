@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { AppError } from '../utils/errorhandler';
 
 export class MailService {
   private transporter = nodemailer.createTransport({
@@ -57,10 +58,7 @@ export class MailService {
         errorMessage = error.message;
       }
       
-      return { 
-        success: false, 
-        message: errorMessage 
-      };
+      throw new AppError("We are currently out of service", 400) 
     }
   }
 }
