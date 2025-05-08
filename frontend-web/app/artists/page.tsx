@@ -8,6 +8,7 @@ import Nav from '@/components/navigation/roleNav'
 import { useAuth } from '@/components/AuthProvider'
 import { useArtists } from '@/hooks/useArtist'
 import ArtistUpdateDialog from '@/components/forms/updateArtist'
+import { Button } from '@/components/ui/button'
 
 const ArtistList = () => {
   const router = useRouter()
@@ -51,6 +52,8 @@ const ArtistList = () => {
     setPage(1) // reset to page 1 on limit change
   }
 
+  const handleNavigateToSongs = (artistId:number)=> router.push(`/songs/${artistId}`)
+
   if (isLoading) return <div>Loading...</div>
 
   return (
@@ -67,7 +70,7 @@ const ArtistList = () => {
           <table className="min-w-full table-auto border-collapse text-sm sm:text-base">
             <thead>
               <tr className="bg-gray-100">
-                <th className="py-2 px-4 border text-left">ID</th>
+                <th className="py-2 px-4 border text-left">S.N.</th>
                 <th className="py-2 px-4 border text-left">Name</th>
                 <th className="py-2 px-4 border text-left">Date of Birth</th>
                 <th className="py-2 px-4 border text-left">Gender</th>
@@ -80,9 +83,9 @@ const ArtistList = () => {
               </tr>
             </thead>
             <tbody>
-              {data?.data.map(artist => (
+              {data?.data.map((artist, index) => (
                 <tr key={artist.id} className="border-b">
-                  <td className="py-2 px-4">{artist.id}</td>
+                  <td className="py-2 px-4">{index+1}</td>
                   <td className="py-2 px-4">{artist.name}</td>
                   <td className="py-2 px-4">{artist.dob ? new Date(artist.dob)?.toLocaleDateString() : 'N/A'}</td>
                   <td className="py-2 px-4">{artist.gender ?? 'N/A'}</td>
@@ -92,6 +95,10 @@ const ArtistList = () => {
                   <td className="py-2 px-4">{new Date(artist.created_at).toLocaleDateString()}</td>
                   <td className="py-2 px-4">{artist.updated_at ? new Date(artist.updated_at).toLocaleDateString() : 'N/A'}</td>
                   <td className="py-2 px-4 flex">
+
+                  <Button onClick={()=>handleNavigateToSongs(artist.id)}>See Songs</Button>
+                  <ArtistUpdateDialog onUpdate={(artistData)=>updateArtist.mutateAsync(artistData)} artist={artist}  />
+
                     <AlertProvider
                       trigger={(
                         <button
@@ -104,7 +111,6 @@ const ArtistList = () => {
                       onConfirm={() => deleteArtist.mutate(artist.id)}
                     />
 
-                    <ArtistUpdateDialog defaultValues={artist} updateArtist={updateArtist.mutate} />
                   </td>
                 </tr>
               ))}

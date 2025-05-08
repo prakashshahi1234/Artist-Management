@@ -17,12 +17,19 @@ export const useAuth = () => {
       const response = await axiosClient.post('/user/login', values)
       return response.data
     },
-    onSuccess: ({data:user}) => {
-      refetchUser()
-      if (user.role === "super_admin" || user.role === "artist_manager") {
-        router.push("/users/all");
-      } else {
-        router.push("/songs/all");
+    onSuccess: async({data:user}) => {
+      console.log(user)
+      await refetchUser()
+      if (user.role === "super_admin") {
+        router.push("/users");
+      } else if(user?.artistId) {
+        router.push(`/songs/${user.artistId}`);
+      }else if(user.role === "artist_manager"){
+        router.push("/artists");
+      }
+      
+      else{
+        toast.error("Your identity is removed.")
       }
     },
     onError: (error: any) => {

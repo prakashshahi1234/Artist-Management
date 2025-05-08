@@ -159,7 +159,7 @@ export function UserUpdateDialog({ user, updateUser }: UserUpdateFormProps) {
               )}
             />
 
-<FormField
+{/* <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
@@ -182,7 +182,7 @@ export function UserUpdateDialog({ user, updateUser }: UserUpdateFormProps) {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
 
             <Button type="submit" disabled={updateUser.isPending} className="w-full">

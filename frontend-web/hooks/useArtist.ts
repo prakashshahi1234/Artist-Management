@@ -62,7 +62,7 @@ export const useArtists = (options?: UseArtistsOptions) => {
 
   // Update artist
   const updateArtist = useMutation({
-    mutationFn: async (artist: Artist) => {
+    mutationFn: async (artist: Partial<Artist>) => {
       const { id, ...rest } = artist
       const res = await axiosClient.patch(`/artists/${id}`, rest)
       return res.data

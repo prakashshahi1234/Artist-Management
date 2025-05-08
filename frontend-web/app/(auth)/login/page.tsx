@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
-
+import {useAuth as useAuthProvider} from '@/components/AuthProvider'
+import Loading from "../Loading";
 // Schema
 const formSchema = z.object({
   email: z.string().email({
@@ -38,13 +39,16 @@ export default function LoginForm() {
       password: "",
     },
   });
-
+  const {isLoading} = useAuthProvider()
   const { login } = useAuth();
   const { mutate, isPending } = login;
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     mutate(values);
   }
+
+  if(isLoading) return <Loading/>
 
   return (
     <div className="flex justify-center items-center px-4 py-8 ">

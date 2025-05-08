@@ -1,10 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { format } from "date-fns"
-import { CalendarIcon, CheckCircle2 } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form"
@@ -22,54 +23,73 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
-import { useArtists } from "@/hooks/useArtist"
 
 const formSchema = z.object({
-  id:z.coerce.number(),
+  id: z.coerce.number(),
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  dob: z.coerce.date({ required_error: "Date of birth is required" }),
-  gender: z.enum(["m", "f", "o"], { required_error: "Please select gender" }),
-  address: z.string().min(10, { message: "Address must be at least 10 characters" }),
+  dob: z.coerce.date({ required_error: "Date of birth is required" }).nullable(),
+  gender: z.enum(["m", "f", "o"], { required_error: "Please select gender" }).nullable(),
+  address: z.string().min(10, { message: "Address must be at least 10 characters" }).nullable(),
   first_release_year: z.coerce.number().optional().nullable(),
   no_of_album_released: z.coerce.number().min(0, { message: "Number of albums must be a positive number" }),
   user_id: z.coerce.number().min(1, { message: "User ID is required" }),
 })
 
-type ArtistUpdateFormProps = {
-  defaultValues?: Partial<z.infer<typeof formSchema>>
-  onSubmitHandler?: (data: z.infer<typeof formSchema>) => void
-  successMessage?: string
+export type ArtistFormData = z.infer<typeof formSchema>
+
+type ArtistUpdateDialogProps = {
+  artist: ArtistFormData
+  onUpdate: (artistData: ArtistFormData) => Promise<void> | void
+  buttonText?: string
+  buttonClassName?: string
 }
 
 export default function ArtistUpdateDialog({
-  defaultValues,
-  onSubmitHandler,
-  successMessage = "Artist Updated Successfully!",
-}: ArtistUpdateFormProps) {
-  const form = useForm<z.infer<typeof formSchema>>({
+  artist,
+  onUpdate,
+  buttonText = "Update Artist",
+  buttonClassName = "bg-blue-500 text-white px-2 py-1 rounded ml-2"
+}: ArtistUpdateDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const form = useForm<ArtistFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      address: "",
-      no_of_album_released: 0,
-      user_id: 1, // example user ID, you can pass this dynamically
-      ...defaultValues,
+      id: artist.id,
+      name: artist.name || "",
+      dob: artist.dob || new Date(),
+      gender: artist.gender || "m",
+      address: artist.address || "",
+      first_release_year: artist.first_release_year || null,
+      no_of_album_released: artist.no_of_album_released || 0,
+      user_id: artist.user_id || 1,
     },
   })
 
-  const {updateArtist} = useArtists()
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    updateArtist.mutate({...values, dob:new Date(values.dob)})
+  async function handleSubmit(values: ArtistFormData) {
+    try {
+      setIsSubmitting(true)
+      await onUpdate({
+        ...values,
+        dob: values.dob && new Date(values.dob)
+      })
+      setOpen(false)
+    } catch (error) {
+      console.error("Failed to update artist:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
- 
+
+  console.log(form.watch("dob"))
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-blue-500 text-white px-2 py-1 rounded ml-2">
-          Update Artist
+        <Button variant="outline" className={buttonClassName}>
+          {buttonText}
         </Button>
       </DialogTrigger>
 
@@ -82,7 +102,10 @@ export default function ArtistUpdateDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {/* Hidden ID field */}
+            <input type="hidden" {...form.register("id")} />
+            
             {/* Name */}
             <FormField name="name" control={form.control} render={({ field }) => (
               <FormItem>
@@ -109,7 +132,8 @@ export default function ArtistUpdateDialog({
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
-                        selected={field.value}
+                        // selected={field.value && field.value}
+                        selected={field.value ? new Date(field.value):new Date()}
                         onSelect={field.onChange}
                         fromYear={1900}
                         toYear={2020}
@@ -123,7 +147,7 @@ export default function ArtistUpdateDialog({
               <FormField name="gender" control={form.control} render={({ field }) => (
                 <FormItem>
                   <FormLabel>Gender</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || "Select gender"}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
                     </FormControl>
@@ -143,7 +167,7 @@ export default function ArtistUpdateDialog({
               <FormItem>
                 <FormLabel>Address</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Artist Address" className="resize-none" {...field} />
+                  <Textarea placeholder="Artist Address" className="resize-none" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -153,7 +177,15 @@ export default function ArtistUpdateDialog({
             <FormField name="first_release_year" control={form.control} render={({ field }) => (
               <FormItem>
                 <FormLabel>First Release Year</FormLabel>
-                <FormControl><Input type="number" placeholder="2000" {...field} /></FormControl>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="2000" 
+                    {...field} 
+                    value={field.value || ""} 
+                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -162,13 +194,40 @@ export default function ArtistUpdateDialog({
             <FormField name="no_of_album_released" control={form.control} render={({ field }) => (
               <FormItem>
                 <FormLabel>Number of Albums Released</FormLabel>
-                <FormControl><Input type="number" placeholder="5" {...field} /></FormControl>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="5" 
+                    {...field} 
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
 
-            <Button type="submit" className="w-full" >
-              { "Update Artist"}
+            {/* User ID */}
+            {/* <FormField name="user_id" control={form.control} render={({ field }) => (
+              <FormItem>
+                <FormLabel>User ID</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="1" 
+                    {...field} 
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} /> */}
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Updating..." : "Update Artist"}
             </Button>
           </form>
         </Form>

@@ -114,7 +114,7 @@ const UserList = () => {
             onChange={(e) => handleLimitChange(Number(e.target.value))}
             className="border p-1 rounded"
           >
-            {[1, 10, 20, 50].map(option => (
+            {[3, 10, 20, 50].map(option => (
               <option key={option} value={option}>
                 {option}
               </option>
