@@ -65,5 +65,12 @@ export class ArtistRepository implements IArtistRepository {
     )
     return rows.count
   }
+
+  async getArtistByUserId(userId:number){
+    console.log(userId)
+   const artist =  (await db.query('select * FROM artists WHERE user_id = ?', [userId]))[0]
+   console.log(artist)
+   return artist;
+  }
   
 }

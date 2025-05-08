@@ -53,4 +53,8 @@ export class ArtistService {
   async countAllArtist(){
     return await this.artistRepository.countAllArtists()
   }
+
+  async getArtistByUserId(userId:number){
+    return await this.artistRepository.getArtistByUserId(userId)
+  }
 }

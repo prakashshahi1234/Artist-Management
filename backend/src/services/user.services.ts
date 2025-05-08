@@ -7,6 +7,7 @@ import { MailService } from './mail.services';
 import { config } from 'dotenv';
 import { AppError } from '../utils/errorhandler';
 import { ArtistService } from './artist.services';
+import { Artist } from '../repositories/artist.repotype';
 
 
 config();
@@ -84,7 +85,7 @@ export class UserService {
   }
 
   // Authenticate user and generate JWT
-  async authenticateUser(email: string, password: string): Promise<{ token: string; user: User }> {
+  async authenticateUser(email: string, password: string): Promise<{ token: string; user: User, artist?:Artist }> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new AppError('invalid user');
 
@@ -92,8 +93,14 @@ export class UserService {
     if (!isValid) throw new AppError('invalid credentials');
 
     if (!user.is_verified) throw new AppError('Please verify your email before logging in');
-
+    
     const token = this.generateToken(user);
+
+    if(user.role==='artist'){
+      const artist = await this.artistService.getArtistByUserId(user.id);
+      console.log(artist)
+      return { token, user , artist};
+    }
     return { token, user };
   }
 

@@ -9,7 +9,7 @@ export class UserController {
 
   async register(req: Request, res: Response, next:NextFunction) {
 
-    
+      console.log(req.body)
     const errors = validationResult(req);
     
     if (!errors.isEmpty()) {
@@ -113,10 +113,12 @@ export class UserController {
 
     try {
       const { email, password } = req.body;
-      const { token, user } = await this.userService.authenticateUser(
+      const { token, user , artist} = await this.userService.authenticateUser(
         email,
         password
       );
+
+      
 
       res.cookie('accessToken', token, {
         httpOnly: true,
@@ -128,7 +130,7 @@ export class UserController {
       res.json({
         success: true,
         message: 'Login successful',
-        data: { id: user.id, role: user.role },
+        data: { id: user.id, role: user.role , artistId:artist?.id},
       });
     } catch (error: any) {
       res.status(400).json({

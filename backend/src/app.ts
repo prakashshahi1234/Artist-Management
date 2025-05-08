@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import db from './db/config/db';
 import userRouter from './routes/user.route'
 import ArtistRouter from './routes/artist.routes'
+import SongRouter from './routes/songs.routes'
 const app = express()
 
 app.use(morgan("dev"))
@@ -34,6 +35,7 @@ await db.initializeTables();
 
 app.use("/api/user", userRouter)
 app.use("/api/artists", ArtistRouter)
+app.use("/api/song", SongRouter)
 
 
 
