@@ -22,12 +22,11 @@ export const useAuth = () => {
       await refetchUser()
       if (user.role === "super_admin") {
         router.push("/users");
-      } else if(user?.artistId) {
-        router.push(`/songs/${user.artistId}`);
-      }else if(user.role === "artist_manager"){
+      } else if(user.role === "artist_manager"){
         router.push("/artists");
+      }else if(user.role==='artist') {
+        router.push(`/songs/${user.artistId}`);
       }
-      
       else{
         toast.error("Your identity is removed.")
       }

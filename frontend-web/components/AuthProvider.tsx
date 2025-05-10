@@ -17,7 +17,8 @@ interface User {
   dob: string // ISO date string
   gender: UserGender
   address: string
-  role: UserRole
+  role: UserRole;
+  artistId?:number;
 }
 
 interface AuthContextType {

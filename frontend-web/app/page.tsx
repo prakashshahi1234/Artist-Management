@@ -20,6 +20,8 @@ export default function Home() {
         router.push("/users");
       }else if( user.role === "artist_manager"){
         router.push("/artists");
+      }else if(user.role==='artist' && user.artistId){
+         router.push(`/songs/${user.artistId}`)
       }
     }
   }, [user, router, isLoading]);
