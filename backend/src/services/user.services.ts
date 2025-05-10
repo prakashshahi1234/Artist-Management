@@ -113,10 +113,17 @@ export class UserService {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: '5h' });
   }
 
-  async getUserProfile(userId: number): Promise<User> {
+  async getUserProfile(userId: number): Promise<{user:User, artist?:Artist}> {
     const user = await this.userRepository.findById(userId);
+    
     if (!user) throw new AppError('user not found');
-    return user;
+
+    if(user.role==='artist'){
+      const artist = await this.artistService.getArtistByUserId(user.id);      
+      return {  user , artist};
+    }
+
+    return {user};
   }
 
   async updateUserProfile(

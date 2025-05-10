@@ -153,7 +153,8 @@ export class UserController {
     }
 
     try {
-      const user = await this.userService.getUserProfile(userId);
+      const {user , artist} = await this.userService.getUserProfile(userId);
+      console.log('artist is', artist)
       res.json({
         success: true,
         message: 'Profile fetched successfully',
@@ -167,6 +168,7 @@ export class UserController {
           gender: user.gender,
           address: user.address,
           role: user.role,
+          artistId:artist?.id
         },
       });
     } catch {

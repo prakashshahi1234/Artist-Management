@@ -54,7 +54,12 @@ export class ArtistService {
     return await this.artistRepository.countAllArtists()
   }
 
-  async getArtistByUserId(userId:number){
-    return await this.artistRepository.getArtistByUserId(userId)
+  async getArtistByUserId(userId:number):Promise<Artist>{
+    const artist = await this.artistRepository.getArtistByUserId(userId)
+    if(!artist){
+      throw new AppError("Your identity as a artist is removed. invalid login")
+    }
+
+    return artist;
   }
 }
