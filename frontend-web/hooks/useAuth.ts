@@ -50,7 +50,8 @@ export const useAuth = () => {
       return response.data
     },
     onSuccess: () => {
-      toast.success("Registration successful! Please check your email to verify your account.")
+      toast.success("Registration successful! Please check your email to verify your account.");
+      router.push("/")
     },
     onError: (error: any) => {
       toast.error("Registration failed: " + (error?.response?.data?.message || "Please try again"))
@@ -68,7 +69,7 @@ export const useAuth = () => {
       return response.data
     },
     onSuccess: () => {
-      toast.success("Admin registered successfully! You can now login.")
+      toast.success("Admin registered successfully!  Please check your email to verify your account.")
       router.push('/login')
     },
     onError: (error: any) => {

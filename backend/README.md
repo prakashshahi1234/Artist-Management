@@ -26,10 +26,3 @@ npm install
 # Start development server
 npm run dev
 
-# OR for Docker setup:
-docker-compose build && docker-compose up
-
-
-#backend and email http server
-http://localhost:8000
-http://localhost:1080

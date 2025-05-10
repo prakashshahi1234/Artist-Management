@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect , use} from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { AlertProvider } from '@/components/customPopOver'
 import { useAuth } from '@/components/AuthProvider'
@@ -11,7 +11,8 @@ import SongUpdateDialog from '@/components/forms/updateSongs'
 
 
 
-const SongList = ({ params }: { params?: { artistId?: string } }) => {
+const SongList = async({ params }: { params: Promise<{ artistId: number }> }) => {
+  const {artistId} = await (params)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -20,9 +21,9 @@ const SongList = ({ params }: { params?: { artistId?: string } }) => {
   const pageFromUrl = parseInt(searchParams.get('page') || '1', 10)
   const limitFromUrl = parseInt(searchParams.get('limit') || '10', 10)
 
-  const artistId = params?.artistId
-    ? parseInt(params.artistId, 10)
-    : parseInt(searchParams.get("artistId") || '0', 10)
+  // let artistId = await (params?.artistId)
+  //   ? parseInt(params.artistId, 10)
+  //   : parseInt(searchParams.get("artistId") || '0', 10)
 
   const [page, setPage] = useState(pageFromUrl)
   const [limit, setLimit] = useState(limitFromUrl)

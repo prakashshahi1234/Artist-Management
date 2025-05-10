@@ -40,14 +40,28 @@ export default function Nav({ role }: NavProps) {
       <div className="flex items-center space-x-2">
         {/* Super Admin Links */}
         {role === "super_admin" && (
+          <>
           <Link href="/register">
             <Button variant="default">Register Artist Manager</Button>
           </Link>
+            <Link href="/users">
+            <Button variant="default">Users</Button>
+          </Link>
+          <Link href="/artists">
+            <Button variant="default">Artists</Button>
+          </Link>
+          </>
         )}
         
         {/* Artist Manager Links */}
         {role === "artist_manager" && (
           <>
+            <Link href="/users">
+              <Button variant="default">Users</Button>
+            </Link>
+            <Link href="/artists">
+              <Button variant="default">Artists</Button>
+            </Link>
             <Link href="/register">
               <Button variant="default">Register Artist</Button>
             </Link>

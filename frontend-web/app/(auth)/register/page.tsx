@@ -14,10 +14,10 @@ export default function Page() {
     return <Loading />;
   }
 
-  let allowedRoles: string[] = [];
+  let allowedRoles: ("super_admin" | "artist_manager" |"artist") [] = [];
   let canRegister = true;
   let onSubmitHandler;
-  let defaultRole = "";
+  let defaultRole :"super_admin" | "artist_manager" |"artist" = "super_admin";
   let hideRoles = false
 
   if (!user) {
@@ -54,10 +54,10 @@ export default function Page() {
       <div className="w-full max-w-md">
         <UserRegistrationForm
           hideRoleField={hideRoles}
+          
           defaultValues={{ role: defaultRole }}
           onSubmitHandler={onSubmitHandler}
           successMessage="Welcome to the platform!"
-          roleOptions={allowedRoles}
         />
       </div>
     </div>

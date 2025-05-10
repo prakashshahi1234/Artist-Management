@@ -20,14 +20,14 @@ import { cn } from "@/lib/utils"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useMutation } from "@tanstack/react-query"
-import { toast } from "sonner"
+
 
 const formSchema = z.object({
   first_name: z.string().min(2, { message: "First name must be at least 2 characters" }),
   last_name: z.string().min(2, { message: "Last name must be at least 2 characters" }),
   email: z.string().email({ message: "Enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  phone: z.string().min(10, { message: "Enter a 10-digit phone number." }),
+  phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits." }),
   dob: z.date({ required_error: "Date of birth is required" }),
   gender: z.enum(["m", "f", "o"], { required_error: "Please select gender" }),
   address: z.string().min(10, { message: "Address must be at least 10 characters" }),
@@ -38,7 +38,7 @@ const formSchema = z.object({
 
 type UserRegistrationFormProps = {
   defaultValues?: Partial<z.infer<typeof formSchema>>
-  onSubmitHandler?: (data: z.infer<typeof formSchema>) => void
+  onSubmitHandler: (data: z.infer<typeof formSchema>) => void
   hideRoleField?: boolean
   successMessage?: string
 }
@@ -62,44 +62,14 @@ export default function UserRegistrationForm({
     },
   })
 
-  const { mutate, isSuccess, isPending } = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
-      if (onSubmitHandler) {
-        return onSubmitHandler(data)
-      }
-      throw new Error("No submission handler provided")
-    },
-    onSuccess: () => {
-      toast.success("User registered successfully")
-    },
-    onError: () => {
-      toast.error("Something went wrong")
-    },
-  })
 
   console.log("your role is ", form.getValues("role"))
   function onSubmit(values: z.infer<typeof formSchema>) {
 
-    mutate(values)
+    onSubmitHandler(values)
+
   }
 
-  if (isSuccess) {
-    return (
-      <div className="flex flex-col items-center justify-center space-y-4 p-6 text-center">
-        <CheckCircle2 className="h-12 w-12 text-green-500" />
-        <h2 className="text-2xl font-semibold">{successMessage}</h2>
-        <p className="text-muted-foreground">
-          We've sent a verification email to{" "}
-          <span className="font-medium text-primary">
-            {form.getValues("email")}
-          </span>. Please check your inbox.
-        </p>
-        <Button variant="outline" onClick={() => form.reset()}>
-          Register Another User
-        </Button>
-      </div>
-    )
-  }
 
   return (
     <Form {...form}>
@@ -226,8 +196,8 @@ export default function UserRegistrationForm({
           )} />
         )}
 
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Registering..." : "Register User"}
+        <Button type="submit" className="w-full">
+          { "Register User"}
         </Button>
       </form>
     </Form>

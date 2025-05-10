@@ -5,6 +5,7 @@ import QueryProvider from "@/components/QueryProvider";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/AuthProvider";
 import MainNav from "@/components/navigation/mainNav";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,10 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
           <MainNav />
+            <Suspense fallback={<>Error Occured.</>}>
             {children}
+            </Suspense>
+
           </AuthProvider>
         </QueryProvider>
       </body>
