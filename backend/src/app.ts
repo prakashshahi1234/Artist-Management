@@ -7,6 +7,8 @@ import db from './db/config/db';
 import userRouter from './routes/user.route'
 import ArtistRouter from './routes/artist.routes'
 import SongRouter from './routes/songs.routes'
+import { server } from './server';
+import { MailService } from './services/mail.services';
 const app = express()
 
 app.use(morgan("dev"))
@@ -22,14 +24,6 @@ const corsCongig = {
 
 
 app.use(cors(corsCongig));
-
-(async()=>{
-
-await db.createDatabase('artist-manager');
-await db.useDatabase('artist-manager')
-await db.initializeTables();
-
-})();
 
 
 

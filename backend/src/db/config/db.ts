@@ -44,10 +44,15 @@ class Database {
   }
 
   private async verifyServerConnection() {
-    const conn = await this.serverPool.getConnection();
-    await conn.ping();
-    conn.release();
-    console.log('[DB] Connected to MySQL server');
+    try {
+      const conn = await this.serverPool.getConnection();
+      await conn.ping();
+      conn.release();
+      console.log('[DB] Connected to MySQL server');
+    } catch (error) {
+       throw new AppError("Database connection error.")
+    }
+
   }
 
   public static getInstance(): Database {
