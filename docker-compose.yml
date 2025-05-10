@@ -1,0 +1,102 @@
+# version: '3.8'
+
+# services:
+#   app:
+#     build: .
+#     container_name: dev_app
+#     restart: unless-stopped
+#     env_file:
+#       - .env
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - mysql
+#       - maildev
+#     volumes:
+#       - .:/app
+#       - /app/node_modules
+
+#   mysql:
+#     image: mysql:8.0
+#     container_name: dev_mysql
+#     restart: unless-stopped
+#     environment:
+#       MYSQL_ROOT_PASSWORD: rootpassword
+#       MYSQL_DATABASE: artist_manager_db
+#       MYSQL_USER: devuser
+#       MYSQL_PASSWORD: devpassword
+#     ports:
+#       - "3306:3306"
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+
+#   maildev:
+#     image: maildev/maildev
+#     container_name: dev_maildev
+#     restart: unless-stopped
+#     ports:
+#       - "1080:1080"
+#       - "1025:1025"
+
+# volumes:
+#   mysql_data:
+
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: dev_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mysql
+      - maildev
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend-web
+    container_name: dev_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-web:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev
+
+  mysql:
+    image: mysql:8.0
+    container_name: dev_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: artist_manager_db
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  maildev:
+    image: maildev/maildev
+    container_name: dev_maildev
+    restart: unless-stopped
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+
+volumes:
+  mysql_data:
