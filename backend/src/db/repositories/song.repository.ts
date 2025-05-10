@@ -1,17 +1,10 @@
 import type { OkPacket } from 'mysql2';
 import db from '../config/db';
-import { Song } from '../../repositories/song.repotype';
+import { ISongRepository, Song } from '../../repositories/song.repotype';
 
 
 
-export interface ISongRepository {
-  create(song: Omit<Song, 'id' | 'created_at' | 'updated_at'>): Promise<number>;
-  findById(id: number): Promise<Song | null>;
-  update(id: number, updates: Partial<Omit<Song, 'id' | 'created_at' | 'updated_at'>>): Promise<void>;
-  delete(id: number): Promise<void>;
-  findAll(limit?: number, offset?: number): Promise<Song[]>;
-  findByArtist(artistId: number): Promise<Song[]>;
-}
+
 
 export class SongRepository implements ISongRepository {
   async create(song: Omit<Song, 'id' | 'created_at' | 'updated_at'>): Promise<number> {

@@ -1,4 +1,4 @@
-// database-queries.ts
+
 export const DatabaseQueries = {
   // User table queries
   CREATE_USER_TABLE: `CREATE TABLE IF NOT EXISTS users (
