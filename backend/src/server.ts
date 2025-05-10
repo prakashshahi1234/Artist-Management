@@ -14,7 +14,7 @@ const server = app.listen(port, async () => {
   try {
     // Mail service test
     await MailService.testConnection();
-    console.log("Mail server started on", `http://localhost:1025`);
+    console.log("Mail server started on", `http://localhost:1080`);
     // Database initialization
     await db.createDatabase("artist-manager");
     await db.useDatabase("artist-manager");

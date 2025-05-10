@@ -22,3 +22,7 @@ cp ./backend/env.sample ./backend/.env
 
 docker compose up --build
 
+mail server :: http://localhost:1080
+bakcend server :: http://localhost:8000
+web-frontend : http://localhost:3000
+
